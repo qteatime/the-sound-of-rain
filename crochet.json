@@ -1,0 +1,40 @@
+{
+  "name": "me.qteati.game.the-sound-of-rain",
+  "target": "browser",
+  "native_sources": [
+    "native/rain.js"
+  ],
+  "sources": [
+    "source/main.crochet",
+    "source/presentation.crochet",
+    "source/describe.crochet",
+    "source/model.crochet",
+    "source/action.crochet"
+  ],
+  "dependencies": [
+    "crochet.core",
+    "crochet.debug",
+    "crochet.time",
+    "crochet.concurrency",
+    {
+      "name": "crochet.novella",
+      "capabilities": ["crochet.core/asset-location"]
+    }
+  ],
+  "capabilities": {
+    "requires": ["native", "crochet.core/asset-location", "crochet.concurrency/wall-clock-timer"],
+    "provides": []
+  },
+  "assets": [
+    "cg.png",
+    "rain.ogg"
+  ],
+  "config": {
+    "electron": {
+      "window": {
+        "width": 720,
+        "height": 720
+      }
+    }
+  }
+}

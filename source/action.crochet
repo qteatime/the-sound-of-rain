@@ -1,0 +1,155 @@
+% crochet
+
+action player do-search "search [self.Direction to-text]"
+when
+  Direction is direction,
+  Thing located-at: Direction
+do
+  fact Thing is-known;
+  for X in Thing things-on-top do
+    fact X is-known;
+  end
+  nvl say: "It feels like [Thing description]";
+end
+
+action player do-inspect "inspect [describe thing: self.Thing]"
+when
+  Thing is-known,
+  ( not Thing carried-by: _ where: carry-location--inside
+  | (Thing carried-by: C where: carry-location--inside, C is-open: true)
+  )
+do
+  fact Thing is-inspected;
+  Thing describe;
+end
+
+action player do-inspect-my-things "inspect [describe thing: self.Thing]"
+when
+  Thing carried-by: player where: _
+do
+  fact Thing is-inspected;
+  Thing describe;
+end
+
+action player do-inventory "check my possessions"
+do
+  let Inventory = (search Thing carried-by: player where: _).Thing;
+  nvl say: (
+    describe list: Inventory
+             prefix: "You're carrying "
+             empty: "You're not carrying anything."
+  );
+end
+
+action player do-take "take [describe thing: self.Thing]"
+when
+  Thing is-known,
+  Thing is-carriable,
+  not Thing carried-by: player where: _,
+  ( not Thing carried-by: _ where: carry-location--inside
+  | (Thing carried-by: C where: carry-location--inside, C is-open: true)
+  )
+do
+  match
+    when not Thing is-inspected do
+      fact Thing is-inspected;
+      Thing describe;
+    end
+
+    otherwise =>
+      nothing;
+  end
+
+  fact Thing carried-by: player where: carry-location--inside;
+end
+
+action player do-open "open [describe thing: self.Container]"
+when
+  Container is-known,
+  Container is-openable,
+  Container is-open: false,
+  not _ carried-by: Container where: carry-location--on-top
+do
+  nvl say: (describe list: Container things-inside
+                     prefix: "Inside there's "
+                     empty: "There's nothing inside.");
+  fact Container is-open: true;
+  for Thing in Container things-inside do
+    fact Thing is-known;
+  end
+end
+
+action player do-close "close [describe thing: self.Container]"
+when
+  Container is-known,
+  Container is-openable,
+  Container is-open: true
+do
+  fact Container is-open: false;
+end
+
+action player do-place-inside "place [describe thing: self.Thing] inside [describe thing: self.Container]"
+when
+  Thing carried-by: player where: _,
+  Container is-known,
+  Container is-container,
+  Container is-openable,
+  Container is-open: true
+do
+  fact Thing carried-by: Container where: carry-location--inside;
+end
+
+action player do-place-on-top "place [describe thing: self.Thing] on top of [describe thing: self.Container]"
+when
+  Thing carried-by: player where: _,
+  Container is-known,
+  Container is-container,
+  not Container is-open: true
+do
+  fact Thing carried-by: Container where: carry-location--on-top;
+end
+
+action player do-force-hatch "force the hatch with [describe thing: self.Thing]"
+when
+  hatch is-open: false,
+  Thing carried-by: player where: _,
+  Thing is-lever
+do
+  nvl say: "The hatch opens easily. I make sure to leave it open for now.";
+  fact hatch is-open: true;
+end
+
+action player do-force-hatch-bad "force the hatch with [describe thing: umbrella]"
+when
+  hatch is-open: false,
+  umbrella carried-by: player where: W
+do
+  nvl say: "Using the umbrella as a lever works better than I'd have hoped.
+            But it really isn't sturdy enough for this task.";
+  nvl say: "I'm sorry, aunt Nada...";
+  fact hatch is-open: true;
+  // FIXME: for some reason `forget umbrella carried-by: player where: W`
+  //        duplicates the umbrella, but there's no time to debug issues
+  //        with the underlying path-dependent logic database :'>
+  fact umbrella carried-by: void where: (#carry-location inside);
+  fact broken-umbrella carried-by: player where: (#carry-location inside);
+end
+
+action player do-leave-blocked "leave the attic"
+when
+  hatch is-open: true,
+  not photo-album carried-by: player where: _
+do
+  nvl say: "No. Wait. I haven't found what I came here for yet.";
+end
+
+action player do-leave "leave the attic"
+when
+  hatch is-open: true,
+  photo-album carried-by: player where: _
+do
+  nvl narrate: "And I head to the veranda, sitting by the garden and looking
+                through the photo album. Outside, the rain continues to fall
+                on the leaves.";
+  fact player at: room-veranda;
+end

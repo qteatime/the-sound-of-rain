@@ -1,0 +1,59 @@
+% crochet
+
+open crochet.novella;
+singleton nvl;
+singleton nvl-asset;
+
+command nvl say: Text do
+  novella say: Text;
+  novella wait-interaction;
+end
+
+command nvl say-line: Text do
+  nvl clear-dialogue;
+  nvl say: Text;
+end
+
+command nvl wait do
+  novella wait-interaction;
+end
+
+command nvl narrate: Text do
+  nvl say: (#nvl-text italic: (Text as nvl-text-component));
+end
+
+command nvl title: Title do
+  novella clear: novella layers title;
+  novella at: novella layers title show: Title;
+end
+
+command nvl clear do
+  novella clear: novella layers title;
+  novella clear: novella layers background;
+  novella clear: novella layers dialogue;
+end
+
+command nvl clear-dialogue do
+  novella clear: novella layers dialogue;
+end
+
+command nvl clear: X do
+  novella clear: X;
+end
+
+command nvl show-background: Bg do
+  novella at: novella layers background show: Bg;
+end
+
+command nvl at: L show: X do
+  novella at: L show: X;
+end
+
+command nvl transform: X with: T =
+  novella transform: X with: T;
+
+command nvl-asset cg = #nvl-image from-asset: (package assets at: "cg.png");
+command nvl-asset title = #nvl-element-dom from-html: (foreign rain.title());
+command nvl-asset fin = #nvl-element-dom from-html: (foreign rain.fin());
+command nvl-asset rain = #nvl-element-dom from-html: (foreign rain.rain());
+command nvl-asset black = #nvl-element-dom from-html: (foreign rain.black());

@@ -1,0 +1,27 @@
+% crochet
+
+singleton describe;
+
+command describe open-state-sentence: Thing =
+  condition
+    when Thing is-openable =>
+      condition
+        when Thing open-state => "It's open.";
+        otherwise => "It's closed.";
+      end;
+
+    otherwise =>
+      "";
+  end;
+
+command describe list: List prefix: Prefix empty: Empty do
+  condition
+    when List is-empty => Empty;
+    when List count === 1 => "[Prefix][describe thing: List first].";
+    otherwise =>
+      "[Prefix][List without-last map: (describe thing: _) |> #text join: _ with: ", "], and [describe thing: List last].";
+  end
+end
+
+command describe thing: Thing =
+  "the [Thing name]";

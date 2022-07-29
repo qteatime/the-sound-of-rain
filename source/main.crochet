@@ -1,0 +1,188 @@
+% crochet
+
+open crochet.novella;
+open crochet.concurrency;
+open crochet.time;
+  
+singleton game;
+
+command main-html: Root do
+  let Layers = #nvl-layer-group defaults;
+  let Renderer = novella web-renderer: Root
+                   | layers: Layers
+                   | width: 720 height: 720;
+  handle
+    game run;
+  with
+    use novella-game renderer: Renderer;
+    use wall-clock-timer;
+  end
+end
+
+command game run do
+  let Bgm = novella make-sound-channel: "bgm" loop: true;
+  Bgm play: (#nvl-audio from-asset: (package assets at: "rain.ogg"));
+
+  do
+    nvl transform: novella layers background with: [
+      #nvl-position x: (#nvl-unit pixels: 0) y: (#nvl-unit pixels: 0),
+      #nvl-dimension width: (#nvl-unit percent: 100) height: (#nvl-unit percent: 100)
+    ];
+    nvl at: novella layers background show: nvl-asset title;
+    nvl at: novella layers background show: nvl-asset rain;
+    nvl wait;
+  end
+
+  Bgm play: (#nvl-audio from-asset: (package assets at: "rain.ogg"));
+
+  do
+    nvl transform: novella layers background with: [
+      #nvl-position x: (#nvl-unit pixels: 0) y: (#nvl-unit rem: 3),
+      #nvl-dimension width: (#nvl-unit percent: 100) height: (#nvl-unit pixels: 175)
+    ];
+    timer sleep: 500 milliseconds;
+    nvl clear: novella layers background;
+    nvl at: novella layers background show: nvl-asset rain;
+  end
+
+
+  nvl title: "The veranda";
+  nvl say: "My sister always told me that ghosts aren't real. That when we die
+            we just disappear. Forever.";
+  nvl say: "As a kid, I didn't understand. I wanted to tell her she was wrong;
+            I couldn't. Not then.";
+  nvl say: "But things are different now.";
+
+  // transition: to black
+  nvl clear-dialogue;
+
+  nvl say: "I know she's wrong. I just can't explain it right with words.
+            I never could. Still, all the proof I need is right here.";
+  nvl narrate: "With a loud thud, I let the hatch close behind me and take
+                a look around. Try to.";
+
+  nvl clear: novella layers background;
+  nvl at: novella layers background show: nvl-asset black;
+
+  nvl title: "The Attic";
+
+  
+  nvl say: "Ugh. It's so dark in here. I forgot we didn't have a window.
+            Maybe I should get a candle.";
+  nvl narrate: "I pull on the hatch, but it feels heavier than before.
+                No matter how much I pull, it won't move an inch.";
+  
+  nvl clear-dialogue;
+  
+
+  nvl say: "Ha...";
+  nvl say: "Great! What a time for it to get stuck! This is what I get for
+            slacking on my chores around the place.";
+  nvl say: "Maybe I should look for something to force it open.";
+
+  fact player at: room-attic;
+
+  simulate for [player]
+  until not player at: room-attic
+  on pick-action: Actions for: _ do
+    let Action = novella choose-action: Actions;
+    nvl clear-dialogue;
+    nvl narrate: "I [Action title].";
+    Action;
+  end;
+
+  nvl clear;
+
+  // Transition to CG
+  do
+    nvl transform: novella layers background with: [
+      #nvl-dimension width: (#nvl-unit pixels: 720) height: (#nvl-unit pixels: 473)
+    ];
+    let Top-height = (#nvl-unit rem: 3) + (#nvl-unit pixels: 473);
+    nvl transform: novella layers dialogue with: [
+      #nvl-position x: (#nvl-unit pixels: 0) y: Top-height,
+      #nvl-dimension width: (#nvl-unit percent: 100) height: ((#nvl-unit percent: 100) - Top-height)
+    ];
+    nvl show-background: nvl-asset cg;
+    timer sleep: 500 milliseconds;
+  end
+
+  nvl title: "The Veranda";
+
+  nvl say-line: "Has it been two years already?";
+  nvl say-line: "I've watched sis' condition worsen.";
+  nvl say-line: "Watched her lose hope in the research that meant so much to her.";
+  nvl say-line: "Watched her move to the city under Mother's pressure.";
+  nvl say-line: "I couldn't say anything to her back then. No matter how much I
+                 asked, she would just force a smile.";
+  nvl say-line: "Tell me that “ghosts aren’t real.”";
+  nvl say-line: "That her research wasn't getting anywhere, anyway.";
+  nvl say-line: "But when I look at her in these photos, her eyes are sparkling.";
+
+
+  match
+    when bag-of-gems is-inspected =>
+      nvl say-line: "Like when she scattered her gemstones over the table
+                     and asked me to take a photo of them, a big grin on her face.";
+    
+    otherwise =>
+      nothing;
+  end
+
+  match
+    when journals is-inspected =>
+      nvl say-line: "Like when she posed with one of her journals covering her
+                     mouth, smiling with her eyes, after enthusiastically telling
+                     me all about her discoveries.";
+    
+    otherwise =>
+      nothing;
+  end
+
+  nvl say-line: "I don't think Mother and I mourned the same person. But it doesn't
+                 matter.";
+  nvl say-line: "You didn't just disappear, sis. All of these memories—all of
+                 you—they still live here. With me.";
+  nvl say-line: "As long as I'm here, so will the you who always chased after what
+                 she believed in. Regardless of what the [#nvl-text emphasis: "famiglia"]
+                 would think.";
+
+  nvl say-line: "It was you who encouraged me to try things by myself. To find out
+                 what I liked. What I wanted to be.";
+  nvl say-line: "I'm sorry I couldn't be there for you when you needed me the most.";
+  nvl say-line: "I'm sorry I didn't have the words I have now.";
+  nvl say-line: "I'm sorry. And thank you.";
+  nvl say-line: "I will keep you alive, sis. Within me.";
+
+  // Transition to white.
+
+  nvl clear: novella layers title;
+  nvl clear: novella layers dialogue;
+  nvl transform: novella layers background with: [
+    #nvl-alpha value: 0
+  ];
+  timer sleep: 500 milliseconds;
+
+  nvl clear: novella layers background;
+
+  nvl transform: novella layers background with: [
+    #nvl-position x: (#nvl-unit pixels: 0) y: (#nvl-unit pixels: 0),
+    #nvl-dimension width: (#nvl-unit percent: 100) height: (#nvl-unit percent: 100),
+    #nvl-alpha value: 1
+  ];
+  nvl transform: novella layers dialogue with: [
+    #nvl-position x: (#nvl-unit pixels: 0) y: (#nvl-unit percent: 30),
+    #nvl-dimension width: (#nvl-unit percent: 100) height: (#nvl-unit percent: 70)
+  ];
+  nvl at: novella layers background show: nvl-asset fin;
+
+  timer sleep: 500 milliseconds;
+
+  nvl at: novella layers dialogue show: "[#nvl-text bold: "Writing / Programming / Art"]";
+  nvl at: novella layers dialogue show: "  Q.";
+
+  nvl at: novella layers dialogue show: "* * *";
+
+  nvl at: novella layers dialogue show: "[#nvl-text bold: "Music"]";
+  nvl at: novella layers dialogue show: "[#nvl-text link-to: "https://freesound.org/people/straget/" text: "https://freesound.org/people/straget/"]";
+end

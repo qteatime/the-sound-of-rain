@@ -1,0 +1,257 @@
+% crochet
+
+// A thing is known if the player has interacted/touched it before.
+relation Thing* is-known;
+// A thing is carriable if the player can pick it up and move around.
+relation Thing* is-carriable;
+// A thing is a container if it can carry other things.
+relation Thing* is-container;
+// A thing is openable if you can open or close it.
+relation Thing* is-openable;
+// A thing that can be used as a lever
+relation Thing* is-lever;
+// Whether a thing has been inspected before
+relation Thing* is-inspected;
+
+// A thing can be carried by exactly one container.
+relation Thing* carried-by: Container where: Carry-location;
+// A thing is located at exactly one direction from the player perspective.
+relation Thing* located-at: Direction;
+// An openable thing can be open or closed.
+relation Openable* is-open: Boolean-state;
+
+relation Player* at: Location;
+
+// Things can be located to any direction from the player perspective.
+enum direction = front, right, left;
+command direction--front to-text = "in front of me";
+command direction--right to-text = "to my right";
+command direction--left to-text = "to my left";
+
+// Things can be carried in different parts of the container
+enum carry-location = inside, on-top;
+
+// Very tiny model for the type hierarchy
+abstract thing;
+
+command thing describe =
+  nvl say: "It's [self description]";
+
+command thing is-known =
+  not ((search self is-known) is-empty);
+
+command thing is-openable =
+  not ((search self is-openable) is-empty);
+
+command thing is-carriable =
+  not ((search self is-carriable) is-empty);
+
+command thing is-container =
+  not ((search self is-container) is-empty);
+
+command thing located-at =
+  (search self located-at: Direction).Direction first;
+
+command thing open-state =
+  (search self is-open: State).State first;
+
+command thing known-things-on-top =
+  (search Thing carried-by: self where: carry-location--on-top, Thing is-known).Thing;
+
+command thing things-on-top =
+  (search Thing carried-by: self where: carry-location--on-top).Thing;
+
+command thing things-inside =
+  (search Thing carried-by: self where: carry-location--inside).Thing;
+
+command thing known-things-inside =
+  (search self is-openable,
+          self is-open: true,
+          Thing carried-by: self where: carry-location--inside,
+          Thing is-known
+  ).Thing;
+
+
+// The actors
+singleton player is thing with
+  at: room-veranda;
+end
+
+singleton void is thing;
+
+
+// The locations
+abstract location is thing;
+singleton room-attic is location;
+singleton room-veranda is location;
+
+
+// The boxes
+abstract box is thing;
+
+command box name =
+  "box [self located-at to-text]";
+
+command box description do
+  "a cardboard box.
+   [describe open-state-sentence: self]
+   [describe list: self known-things-on-top prefix: "On its top there's " empty: ""]
+   [describe list: self known-things-inside prefix: "Inside it there's " empty: ""]";
+end
+
+
+singleton box-front is box with
+  located-at: #direction front;
+  is-container;
+  is-openable;
+  is-open: false;
+end
+
+singleton box-right is box with
+  located-at: #direction right;
+  is-container;
+  is-openable;
+  is-open: false;
+end
+
+singleton box-left is box with
+  located-at: #direction left;
+  is-container;
+  is-openable;
+  is-open: false;
+end
+
+
+// The hatch
+singleton hatch is thing with
+  is-open: false;
+end
+
+
+// The items
+singleton umbrella is thing with
+  is-carriable;
+  carried-by: box-left where: #carry-location on-top;
+
+  command name = "umbrella";
+  command description =
+    "an old umbrella. Used to be aunt Nada's, but has been forgotten here
+     for ages. As I run my hands through it I don't notice any holes. Its
+     iron handle also seems to be in a good shape.";
+end
+
+singleton broken-umbrella is thing with
+  is-carriable;
+
+  command name = "broken umbrella";
+  command description =
+    "aunt Nada's old umbrella. Bent and unusable now...";
+end
+
+singleton crowbar is thing with
+  is-lever;
+  is-carriable;
+  carried-by: box-left where: #carry-location inside;
+
+  command name = "crowbar";
+  command description =
+    "a sturdy crowbar. I don't remember anyone ever using it, but it might
+     help with the hatch.";
+end
+
+singleton pendant is thing with
+  is-carriable;
+  carried-by: box-right where: #carry-location on-top;
+
+  command name = "pendant";
+  command description =
+    "sis' birthstone pendant.";
+
+  command describe do
+    nvl say: "It's [self description]
+              I remember the look of disgust on her face when aunt Nada
+              presented it to her. “What a loathsome green!”";
+    nvl say: "But she ended wearing it all the time. Growing to like it.
+              I think it helped her weak constitution a bit, too.";
+  end
+end
+
+singleton journals is thing with
+  carried-by: box-right where: #carry-location inside;
+
+  command name = "journals";
+  command description =
+    "a bunch of research journals. Back when sis was studying the
+     different planes, she'd fill these at a frightening pace. I asked
+     to borrow one once, but it was too much for my child brain. I wonder
+     if I'd be able to read them now.";
+end
+
+singleton bag-of-gems is thing with
+  is-carriable;
+  carried-by: box-right where: #carry-location inside;
+
+  command name = "bag of gems";
+  command description =
+    "a small leather bag, filled with different gemstones.";
+
+  command describe do
+    nvl say: "It's [self description]
+              Sis always had it on her while doing field work around the
+              forest. Her eyes would sparkle upon each new discovery.";
+    nvl say: "And she'd always invite me to join her little forays, but I had my
+              own issues to work through then. I've never seen her practicing
+              magic, regretfully.";
+  end
+end
+
+singleton cat-figure is thing with
+  is-carriable;
+  carried-by: box-front where: #carry-location on-top;
+
+  command name = "cat figure";
+  command description =
+    "a small cat figure, carved in ashwood by our very own aunt Nada.";
+
+  command describe do
+    nvl say: "It's [self description]
+              Most witches would try to excel at a single line of magic, but
+              she just did whatever she felt like. I remember how jealous I
+              was of her.";
+    nvl say: "Of her freedom.";
+    nvl say: "The figure is just like her. Imperfect, but endearing.";
+  end
+end
+
+singleton photo-album is thing with
+  is-carriable;
+  carried-by: box-front where: #carry-location inside;
+
+  command name = "photo album";
+  command description =
+    "a little album of photographs we filled when we were kids.";
+
+  command describe do
+    nvl say: "It's [self description]
+              I can't believe it ended up all the way here.";
+    nvl say: "They're mostly photos I've taken of sis. Mostly... well, it's
+              not like I have a problem with them nowadays.";
+  end
+end
+
+singleton broken-camera is thing with
+  is-carriable;
+  carried-by: box-front where: #carry-location inside;
+
+  command name = "broken camera";
+  command description =
+    "an old camera aunt Nada gifted me when I was a kid.";
+
+  command describe do
+    nvl say: "It's [self description]
+              It was the last push I needed to explore what I wanted to be,
+              instead of what Mother expected of me.";
+    nvl say: "It eventually broke and I never managed to get it fixed. But
+              it meant a lot to me. I could never throw it away.";
+  end
+end
