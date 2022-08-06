@@ -7,7 +7,7 @@ You can [play the game in your browser in itch.io](https://qteatime.itch.io/the-
 
 ## Implementation
 
-This game uses [an unreleased version of Crochet](https://github.com/qteatime/crochet/tree/o2a2-novella), with a new version of the Novella library.
+This game uses [an unreleased version of Crochet](https://github.com/qteatime/crochet), with a new version of the Novella library.
 
 The new version combines ideas from visual novels and parser-based interactive fiction, which is the kind of presentation this game goes for. The parser-based IF part is backed by the usual path-dependent logic database and stochastic simulation subsystems in Crochet.
 
